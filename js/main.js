@@ -19,31 +19,40 @@ let rotateLeft = false;       // para direita
 let rotateRight = false;    // para esqueda
 const moveSpeed = 0.3;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
-
+let selectedCarIndex = 0; // Índice do carro atualmente controlado
 class Carros{
-    constructor(){
+
+    constructor(modelPath, initialPosition, scale, rotacion){
         this.model = null;
-        this.load();
+        this.load(modelPath, initialPosition, scale, rotacion);
     }
-    load() {
+    load(modelPath, initialPosition, scale, rotacion) {
         const loader = new GLTFLoader();
-        loader.load('modelo/carro2.glb', (gltf) => {
+        loader.load(modelPath, (gltf) => {
             this.model = gltf.scene;
             scene.add(this.model);
             console.log('Modelo carregado com sucesso!');
-            this.model.position.set(5, 2.3, +80);
-            this.model.rotation.y -= 3.2;
-            this.model.scale.set(3,3,3);
+            // this.model.position.set(5, 2.3, +80);
+            // this.model.rotation.y -= 3.2;
+            // this.model.scale.set(3,3,3);
+            this.model.rotation.set(rotacion.x,rotacion.y, rotacion.z)
+            this.model.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
+            this.model.scale.set(scale.x, scale.y, scale.z);
         }, undefined, (error) => {
             console.error('Erro ao carregar o modelo:', error);
         });
     }
-    moverCar() {
-        if (this.model) {
+    moverCar(index) {
+        if (this.model && index === selectedCarIndex)  {
             if (moveForward) this.model.translateZ(+moveSpeed);
             if (moveBackward) this.model.translateZ(-moveSpeed);
-            if (rotateLeft) this.model.rotation.y += rotateSpeed;
+            if (rotateLeft ) this.model.rotation.y += rotateSpeed;
             if (rotateRight) this.model.rotation.y -= rotateSpeed;
+
+            camera.position.x = this.model.position.x;
+            camera.position.y = this.model.position.y + 25;
+            camera.position.z = this.model.position.z + 30;
+            camera.lookAt(this.model.position);
         }
         
     }
@@ -69,7 +78,8 @@ class Cenario{
  
 }
 
-const carro1 = new Carros();
+
+
 const cenario = new Cenario()
 // Adicionando luz ambiente e direcional
 const light = new THREE.AmbientLight(0xffffff, 1);
@@ -78,10 +88,17 @@ scene.add(light);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(1, 1, 1).normalize();
 scene.add(directionalLight);
-
+// const carro1 = new Carros();
+const carros = []; // array liste de carros
+// carregando os modelos de carros para adcionar varios modelos
+carros.push(new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 80), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0,-3.2, 0)));
+carros.push(new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0,-3.2, 0)));
 function animate() {
     requestAnimationFrame(animate);
-    carro1.moverCar();
+    // Mover apenas o carro selecionado
+    carros.forEach((carro, index) => {
+        carro.moverCar(index);
+    });
     renderer.render(scene, camera);
 }
 
