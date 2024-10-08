@@ -203,13 +203,13 @@ const carros = [carro1];
 // Carro que se movimenta automaticamente
 const carro2 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 carro2.setPath([
-    new THREE.Vector3(5, 2.3, 45),   // Ponto inicial
-    new THREE.Vector3(55, 2.3, 45),  // Ponto 1 (direita)
-    new THREE.Vector3(55, 2.3, -10), // Ponto 2 (cima)
+    new THREE.Vector3(5, 2.3, 65),   // Ponto inicial
+    new THREE.Vector3(65, 2.3, 65),  // Ponto 1 (direita)
+    new THREE.Vector3(65, 2.3, -5), // Ponto 2 (cima)
     new THREE.Vector3(5, 2.3, -10),   // Ponto 3 (esquerda)
-    new THREE.Vector3(5, 2.3, 40), // para  Ponto 4 (baixo)
-    new THREE.Vector3(-60, 2.3, 35), //para direita
-    new THREE.Vector3(-55, 2.3, -15), //para direita  para cima
+    new THREE.Vector3(5, 2.3, 65), // para  Ponto 4 (baixo)
+    new THREE.Vector3(-65, 2.3, 65), //para direita
+    new THREE.Vector3(-65, 2.3, -5), //para direita  para cima
     new THREE.Vector3(5, 2.3, -10), // para direita
     
 ]);
