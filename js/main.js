@@ -27,9 +27,10 @@ const deceleration = 0.05; // desacereçao quando a tecla e solta  o carro vai d
 
 
 // variavel reconado a aviao
-let r =10;
+let r =65;
 let theta = 0;
 let phi = Math.PI / 4; // angulo de azimutal
+
 class Carros{
 
     constructor(modelPath, initialPosition, scale, rotacion){
@@ -114,7 +115,7 @@ class Cenario{
     }
     load() {
         const loader = new GLTFLoader();
-        loader.load('modelo/cenario2.glb', (gltf) => {
+        loader.load('modelo/cenario.glb', (gltf) => {
             this.model = gltf.scene;
             scene.add(this.model);
             console.log('Modelo carregado com sucesso!');
@@ -132,6 +133,9 @@ class Aviao{
     constructor(){
         this.model = null;
         this.load();
+        this.r = 68;
+        this.theta = 0;
+        this.phi = Math.PI / 4;
     }
     load() {
         const loader = new GLTFLoader();
@@ -144,6 +148,37 @@ class Aviao{
         }, undefined, (error) => {
             console.error('Erro ao carregar o modelo:', error);
         });
+    }
+    // converte coordenadoas esferica para cartesinas 
+    updatePosition() {
+        // Converter coordenadas esféricas para cartesianas
+        const x = this.r * Math.sin(this.phi) * Math.cos(this.theta);
+        const y = this.r * Math.cos(this.phi);
+        const z = this.r * Math.sin(this.phi) * Math.sin(this.theta);
+
+        // Atualizar a posição do modelo
+        if (this.model) {
+            this.model.position.set(x, y + 15, z); // +10 para ajustar a altura
+
+            // Atualizar a orientação do avião para olhar na direção do movimento
+            const target = new THREE.Vector3(
+                this.r * Math.sin(this.phi) * Math.cos(this.theta -0.1),
+                y + 15,
+                this.r * Math.sin(this.phi) * Math.sin(this.theta - 0.1)
+            );
+            this.model.lookAt(target);
+        }
+    }
+
+    moveForwardAutomatic() {
+        // Aumenta o ângulo azimutal e controla a elevação para um movimento automático
+        this.theta += 0.01; // Controla o movimento horizontal
+        if (this.theta > Math.PI * 2) this.theta -= Math.PI * 2; // Loop completo horizontal
+
+        // Controle de subida e descida automático (opcional)
+        this.phi += 0.005; // Muda a inclinação para cima ou para baixo
+        if (this.phi > Math.PI / 2) this.phi = Math.PI / 2; // Limitar para não passar 90 graus
+        if (this.phi < 0) this.phi = 0; // Limitar para não ir abaixo do chão
     }
  
 }
@@ -162,18 +197,18 @@ scene.add(directionalLight);
 // const carros = []; // array liste de carros
 // carregando os modelos de carros para adcionar varios modelos
 // Carro controlado pelo jogador
-const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 80), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 const carros = [carro1];
 
 // Carro que se movimenta automaticamente
 const carro2 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 carro2.setPath([
-    new THREE.Vector3(5, 2.3, 40),   // Ponto inicial
-    new THREE.Vector3(55, 2.3, 40),  // Ponto 1 (direita)
+    new THREE.Vector3(5, 2.3, 45),   // Ponto inicial
+    new THREE.Vector3(55, 2.3, 45),  // Ponto 1 (direita)
     new THREE.Vector3(55, 2.3, -10), // Ponto 2 (cima)
     new THREE.Vector3(5, 2.3, -10),   // Ponto 3 (esquerda)
     new THREE.Vector3(5, 2.3, 40), // para  Ponto 4 (baixo)
-    new THREE.Vector3(-55, 2.3, 35), //para direita
+    new THREE.Vector3(-60, 2.3, 35), //para direita
     new THREE.Vector3(-55, 2.3, -15), //para direita  para cima
     new THREE.Vector3(5, 2.3, -10), // para direita
     
@@ -185,6 +220,8 @@ function animate() {
     carros.forEach((carro, index) => {
         carro.moverCar(index);
     });
+    aviao.moveForwardAutomatic();
+    aviao.updatePosition();
     renderer.render(scene, camera);
 }
 
