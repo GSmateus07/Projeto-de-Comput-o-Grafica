@@ -20,6 +20,10 @@ let rotateRight = false;    // para esqueda
 const moveSpeed = 0.3;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
+const maxSpeed = 3; // velocidade maxima do carro
+let currentSpeed = 0; // velocidade atual
+const accleration = 0.1; // acelareçao do carro
+const deceleration = 0.05; // desacereçao quando a tecla e solta  o carro vai desacereando
 class Carros{
 
     constructor(modelPath, initialPosition, scale, rotacion){
@@ -44,10 +48,15 @@ class Carros{
     }
     moverCar(index) {
         if (this.model && index === selectedCarIndex)  {
-            if (moveForward) this.model.translateZ(+moveSpeed);
+            if (moveForward) {
+                this.model.translateZ(+moveSpeed);
+            }
             if (moveBackward) this.model.translateZ(-moveSpeed);
-            if (rotateLeft ) this.model.rotation.y += rotateSpeed;
-            if (rotateRight) this.model.rotation.y -= rotateSpeed;
+            if (moveForward || moveBackward){
+                if (rotateLeft ) this.model.rotation.y += rotateSpeed;
+                if (rotateRight) this.model.rotation.y -= rotateSpeed;
+            }
+          
 
             camera.position.x = this.model.position.x;
             camera.position.y = this.model.position.y + 25;
