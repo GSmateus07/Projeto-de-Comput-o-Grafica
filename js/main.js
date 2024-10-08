@@ -20,7 +20,7 @@ let rotateRight = false;    // para esqueda
 const moveSpeed = 0.5;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
-const maxSpeed = 3; // velocidade maxima do carro
+const maxSpeed = 1; // velocidade maxima do carro
 let currentSpeed = 0; // velocidade atual
 const accleration = 0.1; // acelareçao do carro
 const deceleration = 0.05; // desacereçao quando a tecla e solta  o carro vai desacereando
@@ -97,7 +97,7 @@ class Carros{
                 this.currentPathIndex = (this.currentPathIndex + 1) % this.path.length; // Muda para o próximo ponto
             } else {
                 // Move o carro em direção ao ponto alvo
-                this.model.position.add(direction.multiplyScalar(0.5)); // Aumente ou diminua a velocidade ajustando o fator
+                this.model.position.add(direction.multiplyScalar(0.3)); // Aumente ou diminua a velocidade ajustando o fator
                 this.model.lookAt(target); // Faz o carro olhar para o ponto alvo
             }
         }
@@ -193,10 +193,7 @@ scene.add(light);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(1, 1, 1).normalize();
 scene.add(directionalLight);
-// const carro1 = new Carros();
-// const carros = []; // array liste de carros
-// carregando os modelos de carros para adcionar varios modelos
-// Carro controlado pelo jogador
+
 const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 const carros = [carro1];
 
@@ -214,6 +211,23 @@ carro2.setPath([
     
 ]);
 carros.push(carro2);
+
+const carro3 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, -15), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+carro3.setPath([
+     new THREE.Vector3(5, 2.3, -15),   // Ponto inicial
+    new THREE.Vector3(5, 2.3, -55),  // Ponto 1 (frente)
+     new THREE.Vector3(-55, 2.3, -50), // Ponto 2 (esqueda)
+    new THREE.Vector3(-55, 2.3, -5),   // Ponto 3 (frente)
+    new THREE.Vector3(5, 2.3, -5), // para  Ponto 4 (lado)
+    new THREE.Vector3(5, 2.3, -55),
+    new THREE.Vector3(55, 2.3, -55), 
+    new THREE.Vector3(55, 2.3, 55), 
+    new THREE.Vector3(-5, 2.3, 55),
+    new THREE.Vector3(-5, 2.3, -15),
+
+    
+]);
+carros.push(carro3);
 function animate() {
     requestAnimationFrame(animate);
     // Mover apenas o carro selecionado
