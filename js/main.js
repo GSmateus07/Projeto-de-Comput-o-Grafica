@@ -17,18 +17,26 @@ let moveForward = false; // mover para frente
 let moveBackward = false; // mover para atras
 let rotateLeft = false;       // para direita
 let rotateRight = false;    // para esqueda
-const moveSpeed = 0.3;          //movimento do carro
+const moveSpeed = 0.5;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
 const maxSpeed = 3; // velocidade maxima do carro
 let currentSpeed = 0; // velocidade atual
 const accleration = 0.1; // acelareçao do carro
 const deceleration = 0.05; // desacereçao quando a tecla e solta  o carro vai desacereando
+
+
+// variavel reconado a aviao
+let r =10;
+let theta = 0;
+let phi = Math.PI / 4; // angulo de azimutal
 class Carros{
 
     constructor(modelPath, initialPosition, scale, rotacion){
         this.model = null;
         this.load(modelPath, initialPosition, scale, rotacion);
+        this.path = []; // Inicializa path como um array vazio
+        this.currentPathIndex = 0;
     }
     load(modelPath, initialPosition, scale, rotacion) {
         const loader = new GLTFLoader();
@@ -62,10 +70,43 @@ class Carros{
             camera.position.y = this.model.position.y + 25;
             camera.position.z = this.model.position.z + 30;
             camera.lookAt(this.model.position);
+        } else {
+            // Movimentação do carro automático
+            this.moveAutomatically();
         }
         
     }
+    moveAutomatically() {
+        // Verifica se o modelo foi carregado
+        if (!this.model) {
+            console.warn("Modelo não carregado ainda.");
+            return; // Saia se o modelo ainda não estiver carregado
+        }
+    
+        console.log("Caminho atual:", this.path);
+        if (!this.path.length) return; // Se path estiver vazio, não faz nada
+    
+        const target = this.path[this.currentPathIndex];
+        if (target) {
+            const direction = new THREE.Vector3().subVectors(target, this.model.position).normalize();
+            const distance = this.model.position.distanceTo(target);
+    
+            // Se o carro estiver próximo o suficiente do ponto, muda para o próximo ponto
+            if (distance < 1) {
+                this.currentPathIndex = (this.currentPathIndex + 1) % this.path.length; // Muda para o próximo ponto
+            } else {
+                // Move o carro em direção ao ponto alvo
+                this.model.position.add(direction.multiplyScalar(0.5)); // Aumente ou diminua a velocidade ajustando o fator
+                this.model.lookAt(target); // Faz o carro olhar para o ponto alvo
+            }
+        }
+    }
+
+    setPath(pathPoints) {
+        this.path = pathPoints;
+    }
 }
+
 class Cenario{
     constructor(){
         this.model = null;
@@ -73,13 +114,13 @@ class Cenario{
     }
     load() {
         const loader = new GLTFLoader();
-        loader.load('modelo/cenario.glb', (gltf) => {
+        loader.load('modelo/cenario2.glb', (gltf) => {
             this.model = gltf.scene;
             scene.add(this.model);
             console.log('Modelo carregado com sucesso!');
             this.model.position.set(0, 0, 0); // ajsutando a posiçao do cenario no origem
 
-            this.model.rotation.x = Math.PI / 2; // aplicando um rotçao de 90 grau no eixo x
+            // this.model.rotation.x = Math.PI / 2; // aplicando um rotçao de 90 grau no eixo x
         }, undefined, (error) => {
             console.error('Erro ao carregar o modelo:', error);
         });
@@ -87,7 +128,27 @@ class Cenario{
  
 }
 
+class Aviao{
+    constructor(){
+        this.model = null;
+        this.load();
+    }
+    load() {
+        const loader = new GLTFLoader();
+        loader.load('modelo/aviao.glb', (gltf) => {
+            this.model = gltf.scene;
+            scene.add(this.model);
+            console.log('Modelo carregado com sucesso!');
+            this.model.position.set(0, 10, 0); // ajsutando a posiçao do cenario no origem
+            this.model.scale.set(0.1,0.1,0.1);
+        }, undefined, (error) => {
+            console.error('Erro ao carregar o modelo:', error);
+        });
+    }
+ 
+}
 
+const aviao = new Aviao();
 
 const cenario = new Cenario()
 // Adicionando luz ambiente e direcional
@@ -98,10 +159,26 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(1, 1, 1).normalize();
 scene.add(directionalLight);
 // const carro1 = new Carros();
-const carros = []; // array liste de carros
+// const carros = []; // array liste de carros
 // carregando os modelos de carros para adcionar varios modelos
-carros.push(new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 80), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0,-3.2, 0)));
-carros.push(new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0,-3.2, 0)));
+// Carro controlado pelo jogador
+const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 80), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+const carros = [carro1];
+
+// Carro que se movimenta automaticamente
+const carro2 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+carro2.setPath([
+    new THREE.Vector3(5, 2.3, 40),   // Ponto inicial
+    new THREE.Vector3(55, 2.3, 40),  // Ponto 1 (direita)
+    new THREE.Vector3(55, 2.3, -10), // Ponto 2 (cima)
+    new THREE.Vector3(5, 2.3, -10),   // Ponto 3 (esquerda)
+    new THREE.Vector3(5, 2.3, 40), // para  Ponto 4 (baixo)
+    new THREE.Vector3(-55, 2.3, 35), //para direita
+    new THREE.Vector3(-55, 2.3, -15), //para direita  para cima
+    new THREE.Vector3(5, 2.3, -10), // para direita
+    
+]);
+carros.push(carro2);
 function animate() {
     requestAnimationFrame(animate);
     // Mover apenas o carro selecionado
