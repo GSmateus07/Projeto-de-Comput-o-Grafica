@@ -17,6 +17,7 @@ let moveForward = false; // mover para frente
 let moveBackward = false; // mover para atras
 let rotateLeft = false;       // para direita
 let rotateRight = false;    // para esqueda
+let buzina = false // para a buzinha a tecla para buzina vai ser espaço
 const moveSpeed = 0.5;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
@@ -73,7 +74,12 @@ class Carros{
             if (moveBackward) {
                 this.model.translateZ(-moveSpeed);
             }
-                
+            if (buzina){
+                const buzinar = new Audio('son/buzina.mp3')
+                buzinar.play();
+                buzinar.loop = false;
+                console.log("esta buzinando");
+            }  
             if (moveForward || moveBackward){
                 if (rotateLeft ) this.model.rotation.y += rotateSpeed;
                 if (rotateRight) this.model.rotation.y -= rotateSpeed;
@@ -103,7 +109,7 @@ class Carros{
             return; // Saia se o modelo ainda não estiver carregado
         }
     
-        console.log("Caminho atual:", this.path);
+        // console.log("Caminho atual:", this.path);
         if (!this.path.length) return; // Se path estiver vazio, não faz nada
     
         const target = this.path[this.currentPathIndex];
@@ -270,20 +276,40 @@ window.addEventListener('resize', () => {
 
 window.addEventListener('keydown', (event) => {
     switch (event.code) {
-        case 'ArrowUp': moveForward = true; 
-        break;
-        case 'ArrowDown': moveBackward = true;
-         break;
-        case 'ArrowLeft': rotateLeft = true; break;
-        case 'ArrowRight': rotateRight = true; break;
+        case 'ArrowUp':
+             moveForward = true; 
+            break;
+        case 'ArrowDown': 
+            moveBackward = true;
+            break;
+        case 'ArrowLeft':
+             rotateLeft = true; 
+             break;
+        case 'ArrowRight': 
+            rotateRight = true; 
+            break;
+        case 'Space': 
+            buzina = true;
+            break;
     }
 });
 
 window.addEventListener('keyup', (event) => {
     switch (event.code) {
-        case 'ArrowUp': moveForward = false; break;
-        case 'ArrowDown': moveBackward = false; break;
-        case 'ArrowLeft': rotateLeft = false; break;
-        case 'ArrowRight': rotateRight = false; break;
+        case 'ArrowUp': 
+            moveForward = false; 
+                break;
+        case 'ArrowDown': 
+            moveBackward = false; 
+            break;
+        case 'ArrowLeft': 
+            rotateLeft = false; 
+            break;
+        case 'ArrowRight': 
+            rotateRight = false; 
+            break;
+        case 'Space': 
+            buzina = false;
+            break;
     }
 });
