@@ -21,10 +21,10 @@ const moveSpeed = 0.5;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
 const maxSpeed = 1; // velocidade maxima do carro
-let currentSpeed = 0; // velocidade atual
-const accleration = 0.1; // acelareçao do carro
-const deceleration = 0.05; // desacereçao quando a tecla e solta  o carro vai desacereando
+ // velocidade atual
+// desacereçao quando a tecla e solta  o carro vai desacereando
 
+// varivel para limitçao do cenario
 
 // variavel reconado a aviao
 let r =65;
@@ -33,11 +33,19 @@ let phi = Math.PI / 4; // angulo de azimutal
 
 class Carros{
 
+
     constructor(modelPath, initialPosition, scale, rotacion){
         this.model = null;
         this.load(modelPath, initialPosition, scale, rotacion);
         this.path = []; // Inicializa path como um array vazio
         this.currentPathIndex = 0;
+        this.boundaries = { // definino  os limete de onde o carro deve ser mover
+        ZMax: 93,
+        ZMin: -94,
+        XMax: 94,
+        XMin: -94,
+        };
+        
     }
     load(modelPath, initialPosition, scale, rotacion) {
         const loader = new GLTFLoader();
@@ -48,34 +56,45 @@ class Carros{
             // this.model.position.set(5, 2.3, +80);
             // this.model.rotation.y -= 3.2;
             // this.model.scale.set(3,3,3);
-            this.model.rotation.set(rotacion.x,rotacion.y, rotacion.z)
+            this.model.rotation.set(rotacion.x,rotacion.y, rotacion.z) // para totaciona o objeto
             this.model.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
             this.model.scale.set(scale.x, scale.y, scale.z);
         }, undefined, (error) => {
             console.error('Erro ao carregar o modelo:', error);
         });
     }
+
     moverCar(index) {
         if (this.model && index === selectedCarIndex)  {
-            if (moveForward) {
+            const savePosition = this.model.position.clone() /// salva a posiçao anterio para verifca o limitido permitido
+            if (moveForward) { // se o teclar da seta para cima for precionada
                 this.model.translateZ(+moveSpeed);
             }
-            if (moveBackward) this.model.translateZ(-moveSpeed);
+            if (moveBackward) {
+                this.model.translateZ(-moveSpeed);
+            }
+                
             if (moveForward || moveBackward){
                 if (rotateLeft ) this.model.rotation.y += rotateSpeed;
                 if (rotateRight) this.model.rotation.y -= rotateSpeed;
             }
-          
-
+            if(!this.checkBoundaries()){
+            this.model.position.copy(savePosition) // caso saia do limite ele volta para a posiçao anterior
+            }
             camera.position.x = this.model.position.x;
-            camera.position.y = this.model.position.y + 25;
-            camera.position.z = this.model.position.z + 30;
+            camera.position.y = this.model.position.y + 40;
+            camera.position.z = this.model.position.z ;
             camera.lookAt(this.model.position);
         } else {
             // Movimentação do carro automático
             this.moveAutomatically();
         }
         
+    }
+    checkBoundaries(){
+        const { x, z} = this.model.position;
+        const {ZMax, ZMin, XMax, XMin} = this.boundaries;
+        return (z >= ZMin && z <= ZMax && x >= XMin && x <= XMax);
     }
     moveAutomatically() {
         // Verifica se o modelo foi carregado
@@ -194,7 +213,7 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(1, 1, 1).normalize();
 scene.add(directionalLight);
 
-const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.15, 0));
 const carros = [carro1];
 
 // Carro que se movimenta automaticamente
