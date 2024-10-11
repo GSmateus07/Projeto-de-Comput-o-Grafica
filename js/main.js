@@ -18,16 +18,14 @@ let moveBackward = false; // mover para atras
 let rotateLeft = false;       // para direita
 let rotateRight = false;    // para esqueda
 let buzina = false // para a buzinha a tecla para buzina vai ser espaço
-const moveSpeed = 0.5;          //movimento do carro
+const moveSpeed = 0.7;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
 const maxSpeed = 1; // velocidade maxima do carro
- // velocidade atual
-// desacereçao quando a tecla e solta  o carro vai desacereando
-
-// varivel para limitçao do cenario
-
-// variavel reconado a aviao
+const buzinar = new Audio('son/buzina.mp3'); // Carrega o som da buzina
+buzinar.volume = 0.2; // Ajusta o volume para 20% (valor entre 0.0 e 1.0)
+buzinar.loop = false; // Define se o som deve ser repetido
+buzinar.preload = 'auto'; // Garante que o som é carregado automaticamente
 let r =65;
 let theta = 0;
 let phi = Math.PI / 4; // angulo de azimutal
@@ -75,22 +73,33 @@ class Carros{
             if (moveBackward) {
                 this.model.translateZ(-moveSpeed);
             }
-            if (buzina){
-                const buzinar = new Audio('son/buzina.mp3')
-                buzinar.play();
-                buzinar.loop = false;
-                console.log("esta buzinando");
-            }  
+           
             if (moveForward || moveBackward){
                 if (rotateLeft ) this.model.rotation.y += rotateSpeed;
                 if (rotateRight) this.model.rotation.y -= rotateSpeed;
             }
+      
+        if (buzina) {
+            if (buzinar.paused) { // verica se ta tocando 
+                buzinar.currentTime = 0; // Reinicia o som
+                buzinar.play(); // Toca o som
+                console.log("Buzinando...");
+            }
+        } else {
+            if (!buzinar.paused) {
+                buzinar.pause(); // Pausa o som se a tecla for solta
+                buzinar.currentTime = 0; // Reinicia o som para a próxima vez
+                console.log("Parou de buzinar.");
+            }
+        
+            }  
             if(!this.checkBoundaries()){
             this.model.position.copy(savePosition) // caso saia do limite ele volta para a posiçao anterior
             }
+
             // Atualizar a bounding box do carro
             this.boundingBox.setFromObject(this.model);
-            this.boundingBox.expandByScalar(-0.45); // Reduz a bounding box em todas as direções
+            this.boundingBox.expandByScalar(-0.55); // Reduz a bounding box em todas as direções
 
 
             // Verificar colisão com o cenário
@@ -137,7 +146,7 @@ class Carros{
                 this.currentPathIndex = (this.currentPathIndex + 1) % this.path.length; // Muda para o próximo ponto
             } else {
                 // Move o carro em direção ao ponto alvo
-                this.model.position.add(direction.multiplyScalar(0.3)); // Aumente ou diminua a velocidade ajustando o fator
+                this.model.position.add(direction.multiplyScalar(0.4)); // Aumente ou diminua a velocidade ajustando o fator
                 this.model.lookAt(target); // Faz o carro olhar para o ponto alvo
             }
         }
