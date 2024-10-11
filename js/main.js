@@ -39,6 +39,7 @@ class Carros{
         this.model = null;
         this.load(modelPath, initialPosition, scale, rotacion);
         this.path = []; // Inicializa path como um array vazio
+        this.boundingBox = new THREE.Box3(); // Criar uma caixa delimitadora para o carro
         this.currentPathIndex = 0;
         this.boundaries = { // definino  os limete de onde o carro deve ser mover
         ZMax: 93,
@@ -65,7 +66,7 @@ class Carros{
         });
     }
 
-    moverCar(index) {
+    moverCar(index,  cenario) {
         if (this.model && index === selectedCarIndex)  {
             const savePosition = this.model.position.clone() /// salva a posiçao anterio para verifca o limitido permitido
             if (moveForward) { // se o teclar da seta para cima for precionada
@@ -86,6 +87,20 @@ class Carros{
             }
             if(!this.checkBoundaries()){
             this.model.position.copy(savePosition) // caso saia do limite ele volta para a posiçao anterior
+            }
+            // Atualizar a bounding box do carro
+            this.boundingBox.setFromObject(this.model);
+            this.boundingBox.expandByScalar(-0.45); // Reduz a bounding box em todas as direções
+
+
+            // Verificar colisão com o cenário
+            if (this.detectCollision(cenario)) {
+                // Se houver colisão, reverter para a posição anterior
+                this.model.position.copy(savePosition);
+            }
+            // Verifica colisões com outros carros
+         if (this.detectCollisionWithCars(carros)) {
+            this.model.position.copy(savePosition); // Reverter a posição se ocorrer colisão
             }
             camera.position.x = this.model.position.x;
             camera.position.y = this.model.position.y + 40;
@@ -131,11 +146,40 @@ class Carros{
     setPath(pathPoints) {
         this.path = pathPoints;
     }
+    detectCollision(cenario) {
+        const carroBoundingBox = this.boundingBox;
+
+        // Verificar colisão entre o carro e cada parte do cenário
+        for (let i = 0; i < cenario.collidableObjects.length; i++) {
+            const objectBoundingBox = new THREE.Box3().setFromObject(cenario.collidableObjects[i]);
+            if (carroBoundingBox.intersectsBox(objectBoundingBox)) {
+                return true; // Colisão detectada
+            }
+        }
+
+        return false; // Sem colisão
+    }
+    detectCollisionWithCars(carros) {
+        const carroBoundingBox = this.boundingBox;
+
+        for (let i = 0; i < carros.length; i++) {
+            if (carros[i] !== this && carros[i].model) { // Não comparar o carro consigo mesmo
+                const otherCarBoundingBox = carros[i].boundingBox.setFromObject(carros[i].model);
+                if (carroBoundingBox.intersectsBox(otherCarBoundingBox)) {
+                    return true; // Colisão entre carros detectada
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 class Cenario{
     constructor(){
         this.model = null;
+        this.load();
+        this.collidableObjects = []; // Array para armazenar os objetos colidíveis do cenário
         this.load();
     }
     load() {
@@ -145,7 +189,11 @@ class Cenario{
             scene.add(this.model);
             console.log('Modelo carregado com sucesso!');
             this.model.position.set(0, 0, 0); // ajsutando a posiçao do cenario no origem
-
+            this.model.traverse((child) => {
+                if (child.isMesh) {
+                    this.collidableObjects.push(child); // Adicionar objetos colidíveis à lista
+                }
+            });
             // this.model.rotation.x = Math.PI / 2; // aplicando um rotçao de 90 grau no eixo x
         }, undefined, (error) => {
             console.error('Erro ao carregar o modelo:', error);
@@ -257,7 +305,7 @@ function animate() {
     requestAnimationFrame(animate);
     // Mover apenas o carro selecionado
     carros.forEach((carro, index) => {
-        carro.moverCar(index);
+        carro.moverCar(index, cenario);
     });
     aviao.moveForwardAutomatic();
     aviao.updatePosition();
