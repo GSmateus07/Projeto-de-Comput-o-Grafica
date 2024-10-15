@@ -18,10 +18,9 @@ let moveBackward = false; // mover para atras
 let rotateLeft = false;       // para direita
 let rotateRight = false;    // para esqueda
 let buzina = false // para a buzinha a tecla para buzina vai ser espaço
-const moveSpeed = 0.7;          //movimento do carro
+const moveSpeed = 0.6;          //movimento do carro
 const rotateSpeed = 0.05;   // movient para vira para o lados
 let selectedCarIndex = 0; // Índice do carro atualmente controlado
-const maxSpeed = 1; // velocidade maxima do carro
 const buzinar = new Audio('son/buzina.mp3'); // Carrega o som da buzina
 buzinar.volume = 0.2; // Ajusta o volume para 20% (valor entre 0.0 e 1.0)
 buzinar.loop = false; // Define se o som deve ser repetido
@@ -70,11 +69,11 @@ class Carros{
             if (moveForward) { // se o teclar da seta para cima for precionada
                 this.model.translateZ(+moveSpeed);
             }
-            if (moveBackward) {
+            if (moveBackward) { // se a teclar seta para baixo for precionada
                 this.model.translateZ(-moveSpeed);
             }
            
-            if (moveForward || moveBackward){
+            if (moveForward || moveBackward){ // cndiçao para vira esqueda e direita se as tecla de cima e para baixa precionada
                 if (rotateLeft ) this.model.rotation.y += rotateSpeed;
                 if (rotateRight) this.model.rotation.y -= rotateSpeed;
             }
@@ -99,7 +98,7 @@ class Carros{
 
             // Atualizar a bounding box do carro
             this.boundingBox.setFromObject(this.model);
-            this.boundingBox.expandByScalar(-0.55); // Reduz a bounding box em todas as direções
+            this.boundingBox.expandByScalar(-0.90); // Reduz a bounding box em todas as direções
 
 
             // Verificar colisão com o cenário
@@ -276,29 +275,29 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(1, 1, 1).normalize();
 scene.add(directionalLight);
 
-const carro1 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.15, 0));
+const carro1 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 85), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.15, 0));
 const carros = [carro1];
 
 // Carro que se movimenta automaticamente
-const carro2 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+const carro2 = new Carros('modelo/carro.glb', new THREE.Vector3(5, 2.3, 10), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 carro2.setPath([
     new THREE.Vector3(5, 2.3, 65),   // Ponto inicial
     new THREE.Vector3(65, 2.3, 65),  // Ponto 1 (direita)
     new THREE.Vector3(65, 2.3, -5), // Ponto 2 (cima)
-    new THREE.Vector3(5, 2.3, -10),   // Ponto 3 (esquerda)
+    new THREE.Vector3(5, 2.3, -5),   // Ponto 3 (esquerda)
     new THREE.Vector3(5, 2.3, 65), // para  Ponto 4 (baixo)
     new THREE.Vector3(-65, 2.3, 65), //para direita
     new THREE.Vector3(-65, 2.3, -5), //para direita  para cima
-    new THREE.Vector3(5, 2.3, -10), // para direita
+    new THREE.Vector3(5, 2.3, -5), // para direita
     
 ]);
 carros.push(carro2);
 
-const carro3 = new Carros('modelo/carro2.glb', new THREE.Vector3(5, 2.3, -15), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
+const carro3 = new Carros('modelo/carro3.glb', new THREE.Vector3(5, 2.3, -15), new THREE.Vector3(3, 3, 3), new THREE.Vector3(0, -3.2, 0));
 carro3.setPath([
      new THREE.Vector3(5, 2.3, -15),   // Ponto inicial
     new THREE.Vector3(5, 2.3, -55),  // Ponto 1 (frente)
-     new THREE.Vector3(-55, 2.3, -50), // Ponto 2 (esqueda)
+     new THREE.Vector3(-55, 2.3, -55), // Ponto 2 (esqueda)
     new THREE.Vector3(-55, 2.3, -5),   // Ponto 3 (frente)
     new THREE.Vector3(5, 2.3, -5), // para  Ponto 4 (lado)
     new THREE.Vector3(5, 2.3, -55),
